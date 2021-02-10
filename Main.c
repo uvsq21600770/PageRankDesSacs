@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 #define SIZE_ARRAY 15
 #define VERTEX_FIRST true
@@ -9,7 +10,7 @@
 typedef struct Arc
 {
     int Id;
-    float prob;
+    double prob;
     struct Arc* next;
     
 } Arc;
@@ -34,7 +35,7 @@ void followLinks(Arc* A, int i)
     Adds an arc in the Arc** Array
     dest needs to be the vertexID of the destination, we sub 1 to offset it properly in the array
 */
-void addArc(int orig, int dest, float weight, Arc** T)
+void addArc(int orig, int dest, double weight, Arc** T)
 {
     Arc* newArc = malloc(sizeof(Arc));
             newArc->Id = orig;
@@ -63,6 +64,7 @@ void isNumber(char ch)
 int getNumberM(FILE* fp, bool *reachEOLF)
 {         
     char stringInt[SIZE_ARRAY];
+    fpos_t pos;
         for(int i = 0; i < SIZE_ARRAY; i++)
             stringInt[i] = '\0';
         
@@ -73,26 +75,148 @@ int getNumberM(FILE* fp, bool *reachEOLF)
         
         //Fill up the array with the int
         ch = fgetc(fp);
-        while(ch != ' ' && ch != '\n' && ch != EOF && i < SIZE_ARRAY)
+        //printf("ch:<%c>\n", ch);
+        while( !isspace(ch) && ch != '\n' && ch != EOF && i < SIZE_ARRAY)
         {
             isNumber(ch);
             stringInt[i] = ch;
             ch = fgetc(fp);
-            
+            //printf("ch:<%c>\n", ch);
             i++;
         }
         
         //Checks if we reached the end of the line or EOF
+
+            fgetpos(fp, &pos);
+            ch = fgetc(fp);
+            //printf("ch:<%c>\n", ch);
+            while( isspace(ch) || ch == '\n')
+            {
+                fgetpos(fp, &pos);
+                ch = fgetc(fp);
+                //printf("ch:<%c>\n", ch);
+            }
+            fsetpos(fp, &pos);
+            
         if(ch == '\n' || ch == EOF)
+        {
             *reachEOLF = true;
-    //printf("Number = %d from string %s\n", atoi(stringInt), stringInt);
+        }
+    //printf("Number = %d from string <%s> and ch:<%c>\n", atoi(stringInt), stringInt, ch);
         //Ignores whitechars at the end of the line -- MIGHT COME BACK TO FUCK MY ASS
-        if(atoi(stringInt) == 0)
-            return -1;
+        if(atoi(stringInt) == 0 && stringInt[0] != 0)
+            {/*printf("Number = %d from string <%s> and ch:<%c>\n", atoi(stringInt), stringInt, ch); */return -1;}
             
     result = atoi(stringInt);
     
     //printf("Number = %d from string %s\n", result, stringInt);
+    return result;
+}
+
+int parseInt(FILE* fp, bool *reachEOLF)
+{
+    char stringInt[SIZE_ARRAY];
+    fpos_t pos;
+        for(int i = 0; i < SIZE_ARRAY; i++)
+            stringInt[i] = '\0';
+            stringInt[0] = 'B';
+    int result = -1;
+            
+    int i = 0;
+    char ch = '\0';
+
+    ch = fgetc(fp);
+    printf("ch:<%c> hex<%x>\n",ch, ch);
+        while( !isspace(ch) && (ch != '\n' || ch != '\r') && ch != EOF && i < SIZE_ARRAY)
+        {
+            isNumber(ch);
+            stringInt[i] = ch;
+            
+            ch = fgetc(fp);
+            printf("ch:<%c> hex<%x>\n",ch, ch);
+            i++;
+        }
+        
+        fgetpos(fp, &pos);
+        while(isspace(ch))
+        {
+            fgetpos(fp, &pos);
+            if(ch == '\n' || ch == '\r')
+                 {printf("[INT]TRUE\n"); *reachEOLF = true;} 
+            ch = fgetc(fp);
+            printf("ch:<%c> hex<<%x>>\n", ch, ch);
+        }
+        if(ch != EOF)
+            {
+                fsetpos(fp, &pos);
+                printf("[INT] Backoff to <%c>\n", fgetc(fp));
+                fsetpos(fp, &pos);
+            }
+        else
+            *reachEOLF = true;
+        
+            
+    printf("[INT]String read was <%s> last  is <%c> hex<%x>\n\n", stringInt, ch, ch);
+    result = atoi(stringInt);
+    return result;
+}
+
+double parseDouble(FILE* fp, bool *reachEOLF)
+{
+
+    //printf("Call DOUBLE\n");
+
+    char stringDouble[SIZE_ARRAY];
+    char* tailptr;
+    fpos_t pos;
+        for(int i = 0; i < SIZE_ARRAY; i++)
+            stringDouble[i] = '\0';
+            stringDouble[0] = 'B';
+    double result = -1.0;
+            
+    int i = 0;
+    char ch = '\0';
+
+    ch = fgetc(fp);
+    //printf("ch:<%c>\n",ch);
+        while( !isspace(ch) && (ch != '\n' || ch != '\r') && ch != EOF && i < SIZE_ARRAY)
+        {
+            isNumber(ch);
+            stringDouble[i] = ch;
+            
+            ch = fgetc(fp);
+            //printf("ch:<%c>\n",ch);
+            i++;
+        }
+        
+        fgetpos(fp, &pos);
+        while(isspace(ch))
+        {
+            fgetpos(fp, &pos);
+            if(ch == '\n' || ch == '\r')
+                {printf("[DOUBLE]TRUE\n"); *reachEOLF = true;}
+            ch = fgetc(fp);
+        }
+        if(ch != EOF)
+            {
+                fsetpos(fp, &pos);
+                printf("[DOUBLE] Backoff to <%c>\n", fgetc(fp));
+                fsetpos(fp, &pos);
+            
+            }
+        else
+            *reachEOLF = true;
+        
+            
+    printf("[DOUBLE]String read was <%s> last char is <%c> hex<%x>\n\n", stringDouble, ch, ch);
+    result = strtod(stringDouble, &tailptr);
+        if(result == 0)
+        {
+            if(strcmp(stringDouble, tailptr) == 0)
+            {
+                return -1;
+            }
+        }
     return result;
 }
 
@@ -114,7 +238,7 @@ float getFloatM(FILE* fp, bool *reachEOLF)
 
     //Fill up the array with the float
     ch = fgetc(fp);
-    while(ch != ' ' && ch != '\n' && ch != EOF && i < SIZE_ARRAY)
+    while(ch != ' ' && ch != '\n' && ch != '\r' && ch != EOF && i < SIZE_ARRAY)
     {
         isNumber(ch);
         stringFloat[i] = ch;
@@ -123,8 +247,8 @@ float getFloatM(FILE* fp, bool *reachEOLF)
         i++;
     }
     
-    //Checks if we reached the end of the line or EOF
-    if(ch == '\n' || ch == EOF)
+    //Checks if we reached th end of the line or EOF
+    if(ch == '\n' || ch == '\r' || ch == EOF)
         *reachEOLF = true;
         
     //Ignores Whitechars at the end of the line
@@ -136,7 +260,7 @@ float getFloatM(FILE* fp, bool *reachEOLF)
             return -1;
         }
     }
-    //printf("Le float lu est <%.6f> et le string lu est %s\n", result, stringFloat);
+    printf("Le float lu est <%.6f> et le string lu est %s\n", result, stringFloat);
     
     return result;  
 }
@@ -157,7 +281,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     bool reachEOLF = false;
     
     //Read Vertex ID
-    vertexRead = getNumberM(fp, &reachEOLF);
+    vertexRead = parseInt(fp, &reachEOLF);
     if(vertexRead != currentVertex)
     {
         printf("Vertex Mismatch: Lu <%d> VS Attendu <%d>\n", vertexRead, currentVertex);
@@ -165,19 +289,19 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     }
     
     //Read Arc Amount
-    amArcToRead = getNumberM(fp, &reachEOLF);
+    amArcToRead = parseInt(fp, &reachEOLF);
     
     //Read the what's left of the line
     //Then create a new Arc from the data read
-    while(reachEOLF == false)
+    while(reachEOLF == false && amArcToRead != 0)
     {
         //Vertex First
         if(VERTEX_FIRST)
         {
-            destVertex = getNumberM(fp, &reachEOLF);
+            destVertex = parseInt(fp, &reachEOLF);
             if(destVertex != -1)
             {
-                weight = getFloatM(fp, &reachEOLF);
+                weight = parseDouble(fp, &reachEOLF);
                 addArc(currentVertex, destVertex, weight, T);
                 //printf("Arc added was: Orig<%d> Dest<%d> Weight<%f>\n", currentVertex, destVertex, weight);
                 amArcRead++;
@@ -185,10 +309,10 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
         }
         else{
             //Weight First
-            weight = getFloatM(fp, &reachEOLF);
+            weight = parseDouble(fp, &reachEOLF);
             if(weight != -1)
             {
-                destVertex = getNumberM(fp, &reachEOLF );
+                destVertex = parseInt(fp, &reachEOLF);
                 addArc(currentVertex, destVertex, weight, T);
                 amArcRead++;
             }
@@ -214,6 +338,7 @@ void buildHollowMatrix(FILE* fp, int vertexAmm, int arcAmm, Arc** T)
     int arcRead = 0;
     for(int i = 0; i < vertexAmm ; i++)
     {
+        printf("I = %d\n", i);
         arcRead += readLineArc(fp, i+1, T);
     }
     if(arcRead != arcAmm)
@@ -231,7 +356,7 @@ void buildHollowMatrix(FILE* fp, int vertexAmm, int arcAmm, Arc** T)
 
 }
 
-void displayVect(float* vect, int vertexAmm)
+void displayVect(double* vect, int vertexAmm)
 {
     printf("Vect:<");
     for(int i = 0; i < vertexAmm; i++)
@@ -241,9 +366,9 @@ void displayVect(float* vect, int vertexAmm)
     printf(">\n");
 }
 
-float lineMult(Arc* A, float* vect)
+double lineMult(Arc* A, double* vect)
 {
-    float res = 0.0;
+    double res = 0.0;
     Arc* tmp = A;
         while(tmp != NULL)
         {
@@ -255,11 +380,11 @@ float lineMult(Arc* A, float* vect)
     return res;
 }
 
-float* leftMultMatrix(Arc** T, float* vect, int vertexAmm)
+double* leftMultMatrix(Arc** T, double* vect, int vertexAmm)
 {
-    float* newVect;
-    float* tmp;
-    newVect = malloc(sizeof(float) * vertexAmm);
+    double* newVect;
+    double* tmp;
+    newVect = malloc(sizeof(double) * vertexAmm);
         
     for(int i = 0; i < vertexAmm; i++)
     {
@@ -283,7 +408,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
     
-    fp = fopen("Petit Graphe.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("STAN.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -291,7 +416,7 @@ int main(){
        }
     
     //Gets the amount of Vertexes in the matrix
-    int vertexAmm = getNumberM(fp, &reachEOLF);
+    int vertexAmm = parseInt(fp, &reachEOLF);
     printf("vertexAmm = %d\n", vertexAmm);
     
     //La tringle du rideau
@@ -302,21 +427,21 @@ int main(){
     }
     
     //Gets the amount of Arcs in the matrix
-    int arcAmm = getNumberM(fp, &reachEOLF);
+    int arcAmm = parseInt(fp, &reachEOLF);
     printf("arcAmm = %d\n", arcAmm);
     
     //Build the hollow matrix from the file
     buildHollowMatrix(fp, vertexAmm, arcAmm, T);
     
-    float* vect;
-    vect = malloc(sizeof(float) * vertexAmm);
+    double* vect;
+    vect = malloc(sizeof(double) * vertexAmm);
     for(int i = 0; i < vertexAmm; i++)
     {
         vect[i] = 1.0/vertexAmm;
     }
     
     vect = leftMultMatrix(T, vect, vertexAmm);
-    //displayVect(vect, vertexAmm);
+    displayVect(vect, vertexAmm);
 
     //Si j'étais pas un sac ici y aurait des free, lol
     
