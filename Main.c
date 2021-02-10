@@ -126,14 +126,14 @@ int parseInt(FILE* fp, bool *reachEOLF)
     char ch = '\0';
 
     ch = fgetc(fp);
-    printf("ch:<%c> hex<%x>\n",ch, ch);
+    //printf("ch:<%c> hex<%x>\n",ch, ch);
         while( !isspace(ch) && (ch != '\n' || ch != '\r') && ch != EOF && i < SIZE_ARRAY)
         {
             isNumber(ch);
             stringInt[i] = ch;
             
             ch = fgetc(fp);
-            printf("ch:<%c> hex<%x>\n",ch, ch);
+            //printf("ch:<%c> hex<%x>\n",ch, ch);
             i++;
         }
         
@@ -142,21 +142,17 @@ int parseInt(FILE* fp, bool *reachEOLF)
         {
             fgetpos(fp, &pos);
             if(ch == '\n' || ch == '\r')
-                 {printf("[INT]TRUE\n"); *reachEOLF = true;} 
+                 {/*printf("[INT]TRUE\n");*/ *reachEOLF = true;} 
             ch = fgetc(fp);
-            printf("ch:<%c> hex<<%x>>\n", ch, ch);
+            //printf("ch:<%c> hex<<%x>>\n", ch, ch);
         }
         if(ch != EOF)
-            {
-                fsetpos(fp, &pos);
-                printf("[INT] Backoff to <%c>\n", fgetc(fp));
-                fsetpos(fp, &pos);
-            }
+            fsetpos(fp, &pos);
         else
             *reachEOLF = true;
         
             
-    printf("[INT]String read was <%s> last  is <%c> hex<%x>\n\n", stringInt, ch, ch);
+    //printf("[INT]String read was <%s> last  is <%c> hex<%x>\n\n", stringInt, ch, ch);
     result = atoi(stringInt);
     return result;
 }
@@ -194,21 +190,16 @@ double parseDouble(FILE* fp, bool *reachEOLF)
         {
             fgetpos(fp, &pos);
             if(ch == '\n' || ch == '\r')
-                {printf("[DOUBLE]TRUE\n"); *reachEOLF = true;}
+                {/*printf("[DOUBLE]TRUE\n");*/ *reachEOLF = true;}
             ch = fgetc(fp);
         }
         if(ch != EOF)
-            {
                 fsetpos(fp, &pos);
-                printf("[DOUBLE] Backoff to <%c>\n", fgetc(fp));
-                fsetpos(fp, &pos);
-            
-            }
         else
             *reachEOLF = true;
         
             
-    printf("[DOUBLE]String read was <%s> last char is <%c> hex<%x>\n\n", stringDouble, ch, ch);
+    //printf("[DOUBLE]String read was <%s> last char is <%c> hex<%x>\n\n", stringDouble, ch, ch);
     result = strtod(stringDouble, &tailptr);
         if(result == 0)
         {
@@ -338,7 +329,9 @@ void buildHollowMatrix(FILE* fp, int vertexAmm, int arcAmm, Arc** T)
     int arcRead = 0;
     for(int i = 0; i < vertexAmm ; i++)
     {
-        printf("I = %d\n", i);
+        //printf("I = %d\n", i);
+        if(i%50000 == 0)
+            printf("I = %d\n", i);
         arcRead += readLineArc(fp, i+1, T);
     }
     if(arcRead != arcAmm)
@@ -408,7 +401,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
     
-    fp = fopen("STAN.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("DOS/WIN_Stanford_10K.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
