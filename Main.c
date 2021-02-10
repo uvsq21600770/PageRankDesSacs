@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 #define SIZE_ARRAY 15
-#define VERTEX_FIRST true
+#define MAX_SIZE 4096
 
 typedef struct Arc
 {
@@ -55,62 +55,6 @@ void isNumber(char ch)
                 printf("T'as rentre un mauvais fichier, charread: <%c>", ch);
                 exit(EXIT_FAILURE);
             }
-}
-
-
-/*
-    Converts one number from the file into an int
-*/
-int getNumberM(FILE* fp, bool *reachEOLF)
-{         
-    char stringInt[SIZE_ARRAY];
-    fpos_t pos;
-        for(int i = 0; i < SIZE_ARRAY; i++)
-            stringInt[i] = '\0';
-        
-        int result = -1;
-        
-        int i = 0;
-        char ch = '\0';
-        
-        //Fill up the array with the int
-        ch = fgetc(fp);
-        //printf("ch:<%c>\n", ch);
-        while( !isspace(ch) && ch != '\n' && ch != EOF && i < SIZE_ARRAY)
-        {
-            isNumber(ch);
-            stringInt[i] = ch;
-            ch = fgetc(fp);
-            //printf("ch:<%c>\n", ch);
-            i++;
-        }
-        
-        //Checks if we reached the end of the line or EOF
-
-            fgetpos(fp, &pos);
-            ch = fgetc(fp);
-            //printf("ch:<%c>\n", ch);
-            while( isspace(ch) || ch == '\n')
-            {
-                fgetpos(fp, &pos);
-                ch = fgetc(fp);
-                //printf("ch:<%c>\n", ch);
-            }
-            fsetpos(fp, &pos);
-            
-        if(ch == '\n' || ch == EOF)
-        {
-            *reachEOLF = true;
-        }
-    //printf("Number = %d from string <%s> and ch:<%c>\n", atoi(stringInt), stringInt, ch);
-        //Ignores whitechars at the end of the line -- MIGHT COME BACK TO FUCK MY ASS
-        if(atoi(stringInt) == 0 && stringInt[0] != 0)
-            {/*printf("Number = %d from string <%s> and ch:<%c>\n", atoi(stringInt), stringInt, ch); */return -1;}
-            
-    result = atoi(stringInt);
-    
-    //printf("Number = %d from string %s\n", result, stringInt);
-    return result;
 }
 
 int parseInt(FILE* fp, bool *reachEOLF)
@@ -211,49 +155,69 @@ double parseDouble(FILE* fp, bool *reachEOLF)
     return result;
 }
 
-/*
-    Converts one number from the file into a float
-*/
-float getFloatM(FILE* fp, bool *reachEOLF)
+void fetchLine(FILE* fp, char** line, size_t* len)
 {
-    char stringFloat[SIZE_ARRAY];
-    char* tailptr;
-    //Init the array
-    for(int i = 0; i < SIZE_ARRAY; i++)
-        stringFloat[i] = '\0';
-    
-    float result = -1.0;
-    
-    int i = 0;
-    char ch = '\0';
-
-    //Fill up the array with the float
-    ch = fgetc(fp);
-    while(ch != ' ' && ch != '\n' && ch != '\r' && ch != EOF && i < SIZE_ARRAY)
+    char chunk[128];
+    if(line == NULL || len == NULL || fp == NULL)
     {
-        isNumber(ch);
-        stringFloat[i] = ch;
-        ch = fgetc(fp);
-        
-        i++;
+        printf("You fucked up somewhere in ReadLineArc\n");
+        exit(EXIT_FAILURE);
     }
     
-    //Checks if we reached th end of the line or EOF
-    if(ch == '\n' || ch == '\r' || ch == EOF)
-        *reachEOLF = true;
-        
-    //Ignores Whitechars at the end of the line
-    result = strtof(stringFloat, &tailptr);
-    if(result == 0)
+    printf("STEP 1\n");
+    if(*line == NULL || *len < sizeof chunk)
     {
-        if(strcmp(stringFloat, tailptr) == 0)
+        *len = sizeof chunk;
+        *line = malloc(*len);
+        if(*line == NULL)
+            {
+                printf("Failed to allocate memory\n");
+                exit(EXIT_FAILURE);
+            }
+    }
+    printf("STEP 2\n");
+    *line[0] = '\0';
+    printf("STEP 3\n");
+    size_t len_used =strlen(*line);
+    size_t chunk_used =strlen(chunk);
+    printf("STEP 4\n");
+    while(fgets(chunk, sizeof chunk, fp) != NULL)
+    {
+        len_used =strlen(*line);
+        chunk_used =strlen(chunk);
+        
+        printf("STEP 6\n");    
+        if(*len - len_used < chunk_used)
         {
-            return -1;
+            if(*len > SIZE_MAX / 2)
+            {
+                printf("Stop trying to show 2K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
+                exit(EXIT_FAILURE);
+            }
+            else
+                *len *= 2;
+            if((*line = realloc(*line, *len)) == NULL)
+            {
+                printf("Failed to [RE]allocate memory\n");
+                exit(EXIT_FAILURE);
+            }
         }
+        printf("STEP 7\n");    
+            memcpy(*line + len_used, chunk, chunk_used);
+            len_used += chunk_used;
+            (*line)[len_used] = '\0';
+        printf("STEP 7.5\n");    
+            if((*line)[len_used - 1] == '\n')
+            {
+                printf("CRLF has been found\n");
+                break;
+            }
+        printf("STEP 8\n");
     }
-    printf("Le float lu est <%.6f> et le string lu est %s\n", result, stringFloat);
-    
-    return result;  
+        printf("STEP 5\n");
+        printf("[IN]String read <%s>\n", *line);
+        
+        
 }
 
 /*
@@ -268,55 +232,15 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     int vertexRead = 0;
     int destVertex = 0;
     double weight = 0.0;
-    //surveille si on atteind la fin d'une ligne
-    bool reachEOLF = false;
     
-    //Read Vertex ID
-    vertexRead = parseInt(fp, &reachEOLF);
-    if(vertexRead != currentVertex)
-    {
-        printf("Vertex Mismatch: Lu <%d> VS Attendu <%d>\n", vertexRead, currentVertex);
-        exit(EXIT_FAILURE);
-    }
+    char* line = NULL;
+    size_t len = 0;
+    fetchLine(fp, &line, &len);
+    printf("[OUT]String read <%s>\n", line);
     
-    //Read Arc Amount
-    amArcToRead = parseInt(fp, &reachEOLF);
-    
-    //Read the what's left of the line
-    //Then create a new Arc from the data read
-    while(reachEOLF == false && amArcToRead != 0)
-    {
-        //Vertex First
-        if(VERTEX_FIRST)
-        {
-            destVertex = parseInt(fp, &reachEOLF);
-            if(destVertex != -1)
-            {
-                weight = parseDouble(fp, &reachEOLF);
-                addArc(currentVertex, destVertex, weight, T);
-                //printf("Arc added was: Orig<%d> Dest<%d> Weight<%f>\n", currentVertex, destVertex, weight);
-                amArcRead++;
-            }
-        }
-        else{
-            //Weight First
-            weight = parseDouble(fp, &reachEOLF);
-            if(weight != -1)
-            {
-                destVertex = parseInt(fp, &reachEOLF);
-                addArc(currentVertex, destVertex, weight, T);
-                amArcRead++;
-            }
-        }
-        
-    }
-    //Checks the amount of Arcs read VS the amount of Arcs that the matrix announced
-    if(amArcRead != amArcToRead)
-    {
-        printf("Arc amount Mismatch: Lu <%d> VS Attendu <%d>\n", amArcRead, amArcToRead);
-        exit(EXIT_FAILURE);
-    }
-    
+    free(line);
+    if(line == NULL)
+        printf("[POST FREE]String read NULL\n");
     return amArcRead;
 }
 
@@ -327,11 +251,9 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
 void buildHollowMatrix(FILE* fp, int vertexAmm, int arcAmm, Arc** T)
 {
     int arcRead = 0;
-    for(int i = 0; i < vertexAmm ; i++)
+    for(int i = 0; i < /*vertexAmm*/ 1 ; i++)
     {
         //printf("I = %d\n", i);
-        if(i%50000 == 0)
-            printf("I = %d\n", i);
         arcRead += readLineArc(fp, i+1, T);
     }
     if(arcRead != arcAmm)
@@ -401,7 +323,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
     
-    fp = fopen("DOS/WIN_Stanford_10K.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("DOS/WIN_tst.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
