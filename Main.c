@@ -322,7 +322,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
 void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
 {
     int arcRead = 0;
-    for(int i = 0; i < /*vertexAm*/ 1 ; i++)
+    for(int i = 0; i < vertexAm /*1*/ ; i++)
     {
         //printf("I = %d\n", i);
         arcRead += readLineArc(fp, i+1, T);
@@ -330,15 +330,15 @@ void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
     if(arcRead != arcAm)
         {
             printf("Total Arc amount Mismatch: Lu <%d> VS Attendu <%d>\n", arcRead, arcAm);
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
 
     //Just checks if everyone is linked together properly
-    /*
+
     for(int i = 0; i < vertexAm ; i++)
         {
             followLinks(T[i], i);
-        }*/
+        }
 
 }
 
