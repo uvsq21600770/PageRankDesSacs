@@ -3,9 +3,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #define SIZE_ARRAY 15
 #define MAX_SIZE 4096
+clock_t start, end;
 
 typedef struct Arc
 {
@@ -202,7 +204,7 @@ void fetchLine(FILE* fp, char** line, size_t* len)
             (*line)[len_used] = '\0';
             if((*line)[len_used - 1] == '\n')
             {
-                printf("CRLF has been found\n");
+                //printf("CRLF has been found\n");
                 break;
             }
     }
@@ -288,22 +290,22 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     size_t len = 0;
     size_t startingPos = 0;
     fetchLine(fp, &line, &len);
-    printf("[OUT]String read <%s>\n", line);
+    //printf("[OUT]String read <%s>\n", line);
 
     //Reads the vertex ID
     vertexRead = fetchInt(line, len, &startingPos);
-    printf("VertexID <%d>\n", vertexRead);
+    //printf("VertexID <%d>\n", vertexRead);
 
     //Reads the Arc amount
     amArcToRead = fetchInt(line, len, &startingPos);
-    printf("Amount of Arcs to read <%d>\n", amArcToRead);
+    //printf("Amount of Arcs to read <%d>\n", amArcToRead);
 
     while(amArcRead < amArcToRead)
     {
         destVertex = fetchInt(line, len, &startingPos);
-        printf("destVertex <%d>", destVertex);
+        //printf("destVertex <%d>", destVertex);
         weight = fetchDouble(line, len, &startingPos);
-        printf(" for a weight of <%f>\n", weight);
+        //printf(" for a weight of <%f>\n", weight);
 
         addArc(currentVertex, destVertex, weight, T);
 
@@ -311,7 +313,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     }
 
     free(line);
-    printf("Line Over\n\n");
+    //printf("Line Over\n\n");
     return amArcRead;
 }
 
@@ -324,7 +326,12 @@ void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
     int arcRead = 0;
     for(int i = 0; i < vertexAm /*1*/ ; i++)
     {
-        //printf("I = %d\n", i);
+        if(i%50000  == 0) printf("I = %d\n", i);
+        if(i%1000000 == 0)
+        {
+          end = clock();
+          printf("Reaching %d took <%f>s\n",i ,(double)(end - start) / (double)(CLOCKS_PER_SEC));
+        }
         arcRead += readLineArc(fp, i+1, T);
     }
     if(arcRead != arcAm)
@@ -334,12 +341,12 @@ void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
         }
 
     //Just checks if everyone is linked together properly
-
+/*
     for(int i = 0; i < vertexAm ; i++)
         {
             followLinks(T[i], i);
         }
-
+*/
 }
 
 void displayVect(double* vect, int vertexAm)
@@ -385,7 +392,7 @@ double* leftMultMatrix(Arc** T, double* vect, int vertexAm)
 
 int main(){
 
-    printf("Taille Arc*= %d\n", sizeof(Arc*));
+    start = clock();
 
     char ch, file_name[25];
     FILE *fp;
@@ -394,7 +401,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("DOS/Petit Graphe.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("DOS/WIN_wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -431,6 +438,8 @@ int main(){
 
     //Si j'étais pas un sac ici y aurait des free, lol
 
+    end = clock();
+    printf("Completion took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
     fclose(fp);
     return 0;
 }
