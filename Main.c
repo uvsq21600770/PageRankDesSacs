@@ -12,7 +12,7 @@ typedef struct Arc
     int Id;
     double prob;
     struct Arc* next;
-    
+
 } Arc;
 
 
@@ -41,7 +41,7 @@ void addArc(int orig, int dest, double weight, Arc** T)
             newArc->Id = orig;
             newArc->prob = weight;
             newArc->next = T[dest-1];
-            
+
     T[dest-1] = newArc;
 }
 
@@ -65,7 +65,7 @@ int parseInt(FILE* fp, bool *reachEOLF)
             stringInt[i] = '\0';
             stringInt[0] = 'B';
     int result = -1;
-            
+
     int i = 0;
     char ch = '\0';
 
@@ -75,18 +75,18 @@ int parseInt(FILE* fp, bool *reachEOLF)
         {
             isNumber(ch);
             stringInt[i] = ch;
-            
+
             ch = fgetc(fp);
             //printf("ch:<%c> hex<%x>\n",ch, ch);
             i++;
         }
-        
+
         fgetpos(fp, &pos);
         while(isspace(ch))
         {
             fgetpos(fp, &pos);
             if(ch == '\n' || ch == '\r')
-                 {/*printf("[INT]TRUE\n");*/ *reachEOLF = true;} 
+                 {/*printf("[INT]TRUE\n");*/ *reachEOLF = true;}
             ch = fgetc(fp);
             //printf("ch:<%c> hex<<%x>>\n", ch, ch);
         }
@@ -94,8 +94,8 @@ int parseInt(FILE* fp, bool *reachEOLF)
             fsetpos(fp, &pos);
         else
             *reachEOLF = true;
-        
-            
+
+
     //printf("[INT]String read was <%s> last  is <%c> hex<%x>\n\n", stringInt, ch, ch);
     result = atoi(stringInt);
     return result;
@@ -113,7 +113,7 @@ double parseDouble(FILE* fp, bool *reachEOLF)
             stringDouble[i] = '\0';
             stringDouble[0] = 'B';
     double result = -1.0;
-            
+
     int i = 0;
     char ch = '\0';
 
@@ -123,12 +123,12 @@ double parseDouble(FILE* fp, bool *reachEOLF)
         {
             isNumber(ch);
             stringDouble[i] = ch;
-            
+
             ch = fgetc(fp);
             //printf("ch:<%c>\n",ch);
             i++;
         }
-        
+
         fgetpos(fp, &pos);
         while(isspace(ch))
         {
@@ -141,8 +141,8 @@ double parseDouble(FILE* fp, bool *reachEOLF)
                 fsetpos(fp, &pos);
         else
             *reachEOLF = true;
-        
-            
+
+
     //printf("[DOUBLE]String read was <%s> last char is <%c> hex<%x>\n\n", stringDouble, ch, ch);
     result = strtod(stringDouble, &tailptr);
         if(result == 0)
@@ -163,8 +163,7 @@ void fetchLine(FILE* fp, char** line, size_t* len)
         printf("You fucked up somewhere in ReadLineArc\n");
         exit(EXIT_FAILURE);
     }
-    
-    printf("STEP 1\n");
+
     if(*line == NULL || *len < sizeof chunk)
     {
         *len = sizeof chunk;
@@ -175,23 +174,19 @@ void fetchLine(FILE* fp, char** line, size_t* len)
                 exit(EXIT_FAILURE);
             }
     }
-    printf("STEP 2\n");
     *line[0] = '\0';
-    printf("STEP 3\n");
     size_t len_used =strlen(*line);
     size_t chunk_used =strlen(chunk);
-    printf("STEP 4\n");
     while(fgets(chunk, sizeof chunk, fp) != NULL)
     {
         len_used =strlen(*line);
         chunk_used =strlen(chunk);
-        
-        printf("STEP 6\n");    
+
         if(*len - len_used < chunk_used)
         {
             if(*len > SIZE_MAX / 2)
             {
-                printf("Stop trying to show 2K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
+                printf("Stop trying to show 4K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
                 exit(EXIT_FAILURE);
             }
             else
@@ -202,22 +197,78 @@ void fetchLine(FILE* fp, char** line, size_t* len)
                 exit(EXIT_FAILURE);
             }
         }
-        printf("STEP 7\n");    
             memcpy(*line + len_used, chunk, chunk_used);
             len_used += chunk_used;
             (*line)[len_used] = '\0';
-        printf("STEP 7.5\n");    
             if((*line)[len_used - 1] == '\n')
             {
                 printf("CRLF has been found\n");
                 break;
             }
-        printf("STEP 8\n");
     }
-        printf("STEP 5\n");
-        printf("[IN]String read <%s>\n", *line);
-        
-        
+        //printf("[IN]String read <%s>\n", *line);
+
+
+}
+
+size_t fetchString(char* line, size_t totalLen, size_t startingPos, char** subString)
+{
+
+  size_t currentPos = startingPos;
+  while(!isspace(line[currentPos]) && currentPos < totalLen)
+  {
+      currentPos++;
+  }
+  int len = currentPos - startingPos;
+  //printf("len<%d> currentPos<%d> startingPos<%d>\n", len, currentPos, startingPos);
+  //TO be safe
+  if(len == 0)
+  {
+    printf("currentPos = startingPos in fetchStringID\n");
+    exit(EXIT_FAILURE);
+  }
+  //We need one more byte to allow space for the terminating '\0'
+  *subString = malloc(len + 1);
+  if(*subString == NULL){
+      printf("Failed to allocate memory\n");
+      exit(EXIT_FAILURE);
+  }
+  strncpy(*subString, line + startingPos, len);
+  (*subString)[len] = '\0';
+  //set the pos to the next value
+  while(isspace(line[currentPos]) && currentPos < totalLen)
+  {
+    currentPos++;
+  }
+  //printf("Line is: <%s>\nsubLine is <%s>\n", line, *subString);
+  //printf("currentPos= <%d>\n\n", currentPos);
+
+  return currentPos;
+}
+
+double fetchDouble(char* line, size_t totalLen, size_t* startingPos)
+{
+    double result;
+    char* subString;
+    char* tailptr;
+
+    *startingPos = fetchString(line, totalLen, *startingPos, &subString);
+    result = strtod(subString, &tailptr);
+
+    free(subString);
+    return result;
+}
+
+int fetchInt(char* line, size_t totalLen, size_t* startingPos)
+{
+    int result;
+    char* subString;
+
+    *startingPos = fetchString(line, totalLen, *startingPos, &subString);
+    result = atoi(subString);
+
+    free(subString);
+    return result;
 }
 
 /*
@@ -232,15 +283,35 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     int vertexRead = 0;
     int destVertex = 0;
     double weight = 0.0;
-    
+
     char* line = NULL;
     size_t len = 0;
+    size_t startingPos = 0;
     fetchLine(fp, &line, &len);
     printf("[OUT]String read <%s>\n", line);
-    
+
+    //Reads the vertex ID
+    vertexRead = fetchInt(line, len, &startingPos);
+    printf("VertexID <%d>\n", vertexRead);
+
+    //Reads the Arc amount
+    amArcToRead = fetchInt(line, len, &startingPos);
+    printf("Amount of Arcs to read <%d>\n", amArcToRead);
+
+    while(amArcRead < amArcToRead)
+    {
+        destVertex = fetchInt(line, len, &startingPos);
+        printf("destVertex <%d>", destVertex);
+        weight = fetchDouble(line, len, &startingPos);
+        printf(" for a weight of <%f>\n", weight);
+
+        addArc(currentVertex, destVertex, weight, T);
+
+        amArcRead++;
+    }
+
     free(line);
-    if(line == NULL)
-        printf("[POST FREE]String read NULL\n");
+    printf("Line Over\n\n");
     return amArcRead;
 }
 
@@ -248,33 +319,33 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
 /*
     Builds the entire Hollow Matrix
 */
-void buildHollowMatrix(FILE* fp, int vertexAmm, int arcAmm, Arc** T)
+void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
 {
     int arcRead = 0;
-    for(int i = 0; i < /*vertexAmm*/ 1 ; i++)
+    for(int i = 0; i < /*vertexAm*/ 1 ; i++)
     {
         //printf("I = %d\n", i);
         arcRead += readLineArc(fp, i+1, T);
     }
-    if(arcRead != arcAmm)
+    if(arcRead != arcAm)
         {
-            printf("Total Arc amount Mismatch: Lu <%d> VS Attendu <%d>\n", arcRead, arcAmm);
+            printf("Total Arc amount Mismatch: Lu <%d> VS Attendu <%d>\n", arcRead, arcAm);
             exit(EXIT_FAILURE);
         }
-    
+
     //Just checks if everyone is linked together properly
     /*
-    for(int i = 0; i < vertexAmm ; i++)
+    for(int i = 0; i < vertexAm ; i++)
         {
             followLinks(T[i], i);
         }*/
 
 }
 
-void displayVect(double* vect, int vertexAmm)
+void displayVect(double* vect, int vertexAm)
 {
     printf("Vect:<");
-    for(int i = 0; i < vertexAmm; i++)
+    for(int i = 0; i < vertexAm; i++)
     {
         printf("%f ", vect[i]);
     }
@@ -291,75 +362,75 @@ double lineMult(Arc* A, double* vect)
             //printf("res(%f) = prob(%f) * vect(%f)\n", res, tmp->prob,vect[tmp->Id -1]);
             tmp = tmp->next;
         }
-        
+
     return res;
 }
 
-double* leftMultMatrix(Arc** T, double* vect, int vertexAmm)
+double* leftMultMatrix(Arc** T, double* vect, int vertexAm)
 {
     double* newVect;
     double* tmp;
-    newVect = malloc(sizeof(double) * vertexAmm);
-        
-    for(int i = 0; i < vertexAmm; i++)
+    newVect = malloc(sizeof(double) * vertexAm);
+
+    for(int i = 0; i < vertexAm; i++)
     {
         newVect[i] = lineMult(T[i], vect);
     }
-    
+
     tmp = vect;
     free(tmp);
-    
+
     return newVect;
 }
 
 int main(){
-    
+
     printf("Taille Arc*= %d\n", sizeof(Arc*));
-    
+
     char ch, file_name[25];
     FILE *fp;
     bool reachEOLF;
-    
+
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
-    
-    fp = fopen("DOS/WIN_tst.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+
+    fp = fopen("DOS/Petit Graphe.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
           exit(EXIT_FAILURE);
        }
-    
+
     //Gets the amount of Vertexes in the matrix
-    int vertexAmm = parseInt(fp, &reachEOLF);
-    printf("vertexAmm = %d\n", vertexAmm);
-    
+    int vertexAm = parseInt(fp, &reachEOLF);
+    printf("vertexAm = %d\n", vertexAm);
+
     //La tringle du rideau
-    Arc** T = malloc(sizeof(Arc*) * vertexAmm);
-    for(int i = 0; i < vertexAmm; i++)
+    Arc** T = malloc(sizeof(Arc*) * vertexAm);
+    for(int i = 0; i < vertexAm; i++)
     {
         T[i] = NULL;
     }
-    
+
     //Gets the amount of Arcs in the matrix
-    int arcAmm = parseInt(fp, &reachEOLF);
-    printf("arcAmm = %d\n", arcAmm);
-    
+    int arcAm = parseInt(fp, &reachEOLF);
+    printf("arcAm = %d\n", arcAm);
+
     //Build the hollow matrix from the file
-    buildHollowMatrix(fp, vertexAmm, arcAmm, T);
-    
+    buildHollowMatrix(fp, vertexAm, arcAm, T);
+
     double* vect;
-    vect = malloc(sizeof(double) * vertexAmm);
-    for(int i = 0; i < vertexAmm; i++)
+    vect = malloc(sizeof(double) * vertexAm);
+    for(int i = 0; i < vertexAm; i++)
     {
-        vect[i] = 1.0/vertexAmm;
+        vect[i] = 1.0/vertexAm;
     }
-    
-    vect = leftMultMatrix(T, vect, vertexAmm);
-    displayVect(vect, vertexAmm);
+
+    vect = leftMultMatrix(T, vect, vertexAm);
+    displayVect(vect, vertexAm);
 
     //Si j'étais pas un sac ici y aurait des free, lol
-    
+
     fclose(fp);
     return 0;
 }
