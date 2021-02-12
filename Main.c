@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define SIZE_ARRAY 15
-#define MAX_SIZE 4096
+#define MAX_SIZE 262144 //2^18 just enough for wb-edu, we could increase it if we need to load files with bigger lines
 clock_t start, end;
 
 typedef struct Arc
@@ -199,9 +199,9 @@ void fetchLine(FILE* fp, char** line, size_t* len)
 
         if(*len - len_used < chunk_used)
         {
-            if(*len > SIZE_MAX / 2)
+            if(*len > MAX_SIZE / 2)
             {
-                printf("Stop trying to shove 4K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
+                printf("Stop trying to shove 131K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
                 exit(EXIT_FAILURE);
             }
             else
@@ -222,8 +222,6 @@ void fetchLine(FILE* fp, char** line, size_t* len)
             }
     }
         //printf("[IN]String read <%s>\n", *line);
-
-
 }
 
 /*
