@@ -172,7 +172,7 @@ double parseDouble(FILE* fp, bool *reachEOLF)
 */
 void fetchLine(FILE* fp, char** line, size_t* len)
 {
-    char chunk[128];
+    char chunk[256];
     if(line == NULL || len == NULL || fp == NULL)
     {
         printf("You fucked up somewhere in ReadLineArc\n");
@@ -461,6 +461,9 @@ int main(){
 
     //Build the hollow matrix from the file
     buildHollowMatrix(fp, vertexAm, arcAm, T);
+    end = clock();
+    printf("Completion took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
+    return 0;
 
     double* vect;
     vect = malloc(sizeof(double) * vertexAm);
