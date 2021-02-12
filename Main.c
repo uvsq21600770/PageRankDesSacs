@@ -59,6 +59,10 @@ void isNumber(char ch)
             }
 }
 
+/*
+  Legacy code, still used at the beginning of the main, it used to be extensively used in the Test parser
+  It's fucking trash lol
+*/
 int parseInt(FILE* fp, bool *reachEOLF)
 {
     char stringInt[SIZE_ARRAY];
@@ -83,6 +87,7 @@ int parseInt(FILE* fp, bool *reachEOLF)
             i++;
         }
 
+        //This is the work of god
         fgetpos(fp, &pos);
         while(isspace(ch))
         {
@@ -103,6 +108,9 @@ int parseInt(FILE* fp, bool *reachEOLF)
     return result;
 }
 
+/*
+  Useless in the NewParser
+*/
 double parseDouble(FILE* fp, bool *reachEOLF)
 {
 
@@ -157,6 +165,11 @@ double parseDouble(FILE* fp, bool *reachEOLF)
     return result;
 }
 
+
+/*
+  Reads a line and dynamically allocate enough memory to store it in char** line
+  We first try to make it fit in 128bits then 256 then 512 etc with a max size of MAX_SIZE (currently 4096)
+*/
 void fetchLine(FILE* fp, char** line, size_t* len)
 {
     char chunk[128];
@@ -176,7 +189,7 @@ void fetchLine(FILE* fp, char** line, size_t* len)
                 exit(EXIT_FAILURE);
             }
     }
-    *line[0] = '\0';
+    (*line)[0] = '\0';
     size_t len_used =strlen(*line);
     size_t chunk_used =strlen(chunk);
     while(fgets(chunk, sizeof chunk, fp) != NULL)
@@ -188,7 +201,7 @@ void fetchLine(FILE* fp, char** line, size_t* len)
         {
             if(*len > SIZE_MAX / 2)
             {
-                printf("Stop trying to show 4K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
+                printf("Stop trying to shove 4K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
                 exit(EXIT_FAILURE);
             }
             else
@@ -213,6 +226,10 @@ void fetchLine(FILE* fp, char** line, size_t* len)
 
 }
 
+/*
+  Finds the first non white block of characters in a string and copy it to subString
+  Then finds the beginning of the next non white block and returns the position of the indice
+*/
 size_t fetchString(char* line, size_t totalLen, size_t startingPos, char** subString)
 {
 
@@ -248,6 +265,9 @@ size_t fetchString(char* line, size_t totalLen, size_t startingPos, char** subSt
   return currentPos;
 }
 
+/*
+  Uses fetchString to get a block of chars and converts it to a double while progressing the readingHead startingPos
+*/
 double fetchDouble(char* line, size_t totalLen, size_t* startingPos)
 {
     double result;
@@ -261,6 +281,9 @@ double fetchDouble(char* line, size_t totalLen, size_t* startingPos)
     return result;
 }
 
+/*
+  Uses fetchString to get a block of chars and converts it to an int while progressing the readingHead startingPos
+*/
 int fetchInt(char* line, size_t totalLen, size_t* startingPos)
 {
     int result;
@@ -300,6 +323,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T)
     amArcToRead = fetchInt(line, len, &startingPos);
     //printf("Amount of Arcs to read <%d>\n", amArcToRead);
 
+    //Reads and creates all the Arc of the line
     while(amArcRead < amArcToRead)
     {
         destVertex = fetchInt(line, len, &startingPos);
@@ -326,18 +350,20 @@ void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
     int arcRead = 0;
     for(int i = 0; i < vertexAm /*1*/ ; i++)
     {
+        /*
+        //Used to see some stuff happen on the screen while we load big ass files
         if(i%50000  == 0) printf("I = %d\n", i);
         if(i%1000000 == 0)
         {
           end = clock();
           printf("Reaching %d took <%f>s\n",i ,(double)(end - start) / (double)(CLOCKS_PER_SEC));
-        }
+        }*/
         arcRead += readLineArc(fp, i+1, T);
     }
     if(arcRead != arcAm)
         {
             printf("Total Arc amount Mismatch: Lu <%d> VS Attendu <%d>\n", arcRead, arcAm);
-            //exit(EXIT_FAILURE);
+            exit(EXIT_FAILURE);
         }
 
     //Just checks if everyone is linked together properly
@@ -348,7 +374,9 @@ void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T)
         }
 */
 }
-
+/*
+  Prints a Vector
+*/
 void displayVect(double* vect, int vertexAm)
 {
     printf("Vect:<");
@@ -358,7 +386,10 @@ void displayVect(double* vect, int vertexAm)
     }
     printf(">\n");
 }
-
+/*
+  Vector X Vector multiplication
+  The first vector is actually one of our list of predecessor
+*/
 double lineMult(Arc* A, double* vect)
 {
     double res = 0.0;
@@ -372,7 +403,11 @@ double lineMult(Arc* A, double* vect)
 
     return res;
 }
-
+/*
+  Vector X Matrix
+  I'll probably take lineMult out of the loop and produce a vector
+  That should help speed up the exec a bit
+*/
 double* leftMultMatrix(Arc** T, double* vect, int vertexAm)
 {
     double* newVect;
@@ -392,6 +427,7 @@ double* leftMultMatrix(Arc** T, double* vect, int vertexAm)
 
 int main(){
 
+    //For exec time mesuring
     start = clock();
 
     char ch, file_name[25];
