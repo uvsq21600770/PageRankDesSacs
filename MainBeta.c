@@ -544,7 +544,7 @@ int main(){
 
         printf("-----------------------\nIteration <%d>\n", iteration);
         copyVector(previousVector, currentVector, vertexAm);
-        XFT = multVectors(currentVector, f, vertexAm);
+        XFT = multVectors(previousVector, f, vertexAm);
         perturbator = val_1 + val_2 * XFT;
         xP(T, currentVector, vertexAm, tmpVectorPointer);
         xG(currentVector, vertexAm, tmpVectorPointer, perturbator);

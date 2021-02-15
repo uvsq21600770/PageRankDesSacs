@@ -325,7 +325,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
     //Reads the Arc amount
     amArcToRead = fetchInt(line, len, &startingPos);
     if(amArcToRead == 0)
-        f[currentVertex] = 1;
+        f[currentVertex-1] = 1;
     //printf("Amount of Arcs to read <%d>\n", amArcToRead);
 
     //Reads and creates all the Arc of the line
@@ -404,10 +404,10 @@ double lineMult(Arc* A, double* vect)
         while(tmp != NULL)
         {
             res += tmp->prob * vect[tmp->Id -1];
-            printf("res(%f) = prob(%f) * vect(%f) stepRes <%f> tmp->Id<%d>\n", res, tmp->prob,vect[tmp->Id -1], tmp->prob * vect[tmp->Id -1], tmp->Id);
+            //printf("res(%f) = prob(%f) * vect(%f) stepRes <%f> tmp->Id<%d>\n", res, tmp->prob,vect[tmp->Id -1], tmp->prob * vect[tmp->Id -1], tmp->Id);
             tmp = tmp->next;
         }
-        printf("\n");
+        //printf("\n");
     return res;
 }
 /*
@@ -423,7 +423,7 @@ double* leftMultMatrix(Arc** T, double* vect, int vertexAm, double perturbator)
     //printf("Alpha: >%f< perturbator <%f>\n", ALPHA, perturbator);
     for(int i = 0; i < vertexAm; i++)
     {
-      //  printf("I<%d>:\n", i);
+        //printf("I<%d>:\n", i);
         newVect[i] = ALPHA * (lineMult(T[i], vect)) + perturbator;
         //printf("LM <%f>, newVect[%d] <%f>, calc <%f>\n", lineMult(T[i], vect),i ,newVect[i], ALPHA * (lineMult(T[i], vect)) + perturbator);
     }
@@ -436,7 +436,7 @@ double multVectors(double* vect, int* f, int vertexAm)
     double res = 0.0;
     for(int i = 0; i < vertexAm; i++)
     {
-        res += vect[i] * (double)f[i];
+        res += vect[i] * f[i]*1.0;
         //printf("res<%f> += vect[%d]<%f> * (double)f[%d]<%f> --- F[%d]<%f\n", res,i ,vect[i],i ,(double)f[i],i,f[i]);
     }
 
@@ -469,7 +469,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("DOS/web4.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("DOS/WIN_wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -526,12 +526,12 @@ int main(){
     {
 
         iteration++;
-        printf("-----------------------\nIteration <%d>\n", iteration);
+        printf("Iteration <%d> -- ", iteration);
 
         xft = multVectors(currentVector, f, vertexAm);
-        printf("XFT = <%f>\n", xft);
+        //printf("XFT = <%f>\n", xft);
         perturbator = (ONE_MINUS_ALPHA * median) + ((ALPHA * median) * xft);
-        printf("perturbator = <%f> --- median <%f> A*M*XFT <%f>\n", perturbator, median, (ALPHA * median) * xft);
+//printf("perturbator = <%f> --- median <%f> A*M*XFT <%f>\n", perturbator, median, (ALPHA * median) * xft);
 
         tmpVectorPointer = leftMultMatrix(T, currentVector, vertexAm, perturbator);
 
@@ -541,7 +541,7 @@ int main(){
 
         delta = detlaVector(previousVector, currentVector, vertexAm);
         printf("delta <%0.10f>\n", delta);
-        displayVect(currentVector, vertexAm); printf("\n");
+        //displayVect(currentVector, vertexAm);
         //displayVect(previousVector, vertexAm); printf("\n");
         //if(iteration > 2) return 0;
     }
