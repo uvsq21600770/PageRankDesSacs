@@ -8,8 +8,6 @@
 
 #define SIZE_ARRAY 15
 #define MAX_SIZE 262144 //2^18 just enough for wb-edu, we could increase it if we need to load bigger lines
-#define ALPHA 0.85
-#define ONE_MINUS_ALPHA 0.15
 #define EPSILON 0.000001
 
 clock_t start, end;
@@ -303,7 +301,7 @@ int fetchInt(char* line, size_t totalLen, size_t* startingPos)
     Reads one line of the TXT Matrix
     Creates and place all the new arcs inside the hollow matrix
 */
-int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
+int readLineArc(FILE* fp, int currentVertex, Arc** T, double* f)
 {
 
     int amArcRead = 0;
@@ -325,7 +323,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
     //Reads the Arc amount
     amArcToRead = fetchInt(line, len, &startingPos);
     if(amArcToRead == 0)
-        f[currentVertex] = 1;
+      f[currentVertex] = 1.0;
     //printf("Amount of Arcs to read <%d>\n", amArcToRead);
 
     //Reads and creates all the Arc of the line
@@ -350,7 +348,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
 /*
     Builds the entire Hollow Matrix
 */
-void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T, int* f)
+void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T, double* f)
 {
     int arcRead = 0;
     for(int i = 0; i < vertexAm /*1*/ ; i++)
@@ -404,10 +402,10 @@ double lineMult(Arc* A, double* vect)
         while(tmp != NULL)
         {
             res += tmp->prob * vect[tmp->Id -1];
-            printf("res(%f) = prob(%f) * vect(%f) stepRes <%f> tmp->Id<%d>\n", res, tmp->prob,vect[tmp->Id -1], tmp->prob * vect[tmp->Id -1], tmp->Id);
+            //printf("res(%f) = prob(%f) * vect(%f) stepRes <%f> tmp->Id<%d>\n", res, tmp->prob,vect[tmp->Id -1], tmp->prob * vect[tmp->Id -1], tmp->Id - 1);
             tmp = tmp->next;
         }
-        printf("\n");
+        //printf("\n");
     return res;
 }
 /*
@@ -415,23 +413,27 @@ double lineMult(Arc* A, double* vect)
   I'll probably take lineMult out of the loop and produce a vector
   That should help speed up the exec a bit
 */
-double* leftMultMatrix(Arc** T, double* vect, int vertexAm, double perturbator)
+void xP(Arc** T, double* vect, int vertexAm, double* tmpVectorPointer)
 {
-    double* newVect;
-    newVect = malloc(sizeof(double) * vertexAm);
-
     //printf("Alpha: >%f< perturbator <%f>\n", ALPHA, perturbator);
     for(int i = 0; i < vertexAm; i++)
     {
       //  printf("I<%d>:\n", i);
-        newVect[i] = ALPHA * (lineMult(T[i], vect)) + perturbator;
+        tmpVectorPointer[i] = lineMult(T[i], vect);
         //printf("LM <%f>, newVect[%d] <%f>, calc <%f>\n", lineMult(T[i], vect),i ,newVect[i], ALPHA * (lineMult(T[i], vect)) + perturbator);
     }
 
-    return newVect;
 }
 
-double multVectors(double* vect, int* f, int vertexAm)
+void xG(double* currentVector, int vertexAm, double* xP, double perturbator)
+{
+    for(int i=0; i < vertexAm; i++)
+    {
+      currentVector[i] = 0.85 * xP[i] + perturbator;
+    }
+}
+
+double multVectors(double* vect, double* f, int vertexAm)
  {
     double res = 0.0;
     for(int i = 0; i < vertexAm; i++)
@@ -446,11 +448,29 @@ double multVectors(double* vect, int* f, int vertexAm)
 double detlaVector(double* previousVector, double* currentVector, size_t vertexAm)
  {
    double result = 0.0;
+   double PV = 0.0;
+   double CV = 0.0;
+
+   /*for(int i = 0; i < vertexAm; i++)
+      {
+         PV += previousVector[i];
+         CV += currentVector[i];
+      }
+   result = CV - PV;
+   printf("result <%f> CV <%f> PV <%f>\n", result, CV, PV);*/
+
    for(int i = 0; i < vertexAm; i++)
       {
          result += fabs(previousVector[i] - currentVector[i]);
+         //printf("result <%f> CV <%f> PV <%f>\n", result, currentVector[i], previousVector[i]);
       }
    return result;
+ }
+
+ void copyVector(double* target, double* orig, int vertexAm)
+ {
+   for(int i=0; i < vertexAm; i++)
+      target[i] = orig[i];
  }
 
 int main(){
@@ -461,10 +481,6 @@ int main(){
     char ch, file_name[25];
     FILE *fp;
     bool reachEOLF;
-    double median = 0.0;
-    double xft = 0.0;
-    double perturbator = 0.0;
-    double delta = 10*EPSILON;
 
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
@@ -479,7 +495,6 @@ int main(){
     //Gets the amount of Vertexes in the matrix
     int vertexAm = parseInt(fp, &reachEOLF);
     printf("vertexAm = %d\n", vertexAm);
-    median = 1.0/vertexAm;
 
     //La tringle du rideau
     Arc** T = malloc(sizeof(Arc*) * vertexAm);
@@ -487,18 +502,13 @@ int main(){
     {
         T[i] = NULL;
     }
+    double* f = malloc(sizeof(double)* vertexAm);
+    for(int i=0; i<vertexAm; i++)
+        f[i] = 0.0;
 
     //Gets the amount of Arcs in the matrix
     int arcAm = parseInt(fp, &reachEOLF);
     printf("arcAm = %d\n", arcAm);
-
-    //the "f" from XFT
-    int* f;
-    f = malloc(sizeof(int) * vertexAm);
-        for(int i = 0; i < vertexAm; i++)
-        {
-            f[i] = 0;
-        }
 
     //Build the hollow matrix from the file
     buildHollowMatrix(fp, vertexAm, arcAm, T, f);
@@ -509,11 +519,17 @@ int main(){
     double* previousVector;
     double* currentVector;
     double* tmpVectorPointer;
+    double val_1 = (1.0 - 0.85) * (1.0/vertexAm);
+    double val_2 = 0.85 * (1.0/vertexAm);
+    double delta = 10*EPSILON;
+    double XFT = 0.0;
+    double perturbator = 0.0;
 
     //It will be free instantly when we enter the loop so we don't need to give an actual meaningful amount, it will soon take the value of currentVector anyway
     //That probably could have been avoided but I'm currently eating diner so you can go fuck right off a cliff
-    previousVector = malloc(1);
+    previousVector = malloc(sizeof(double) * vertexAm);
     currentVector = malloc(sizeof(double) * vertexAm);
+    tmpVectorPointer = malloc(sizeof(double) * vertexAm);
 
     for(int i = 0; i < vertexAm; i++)
     {
@@ -521,29 +537,24 @@ int main(){
         //currentVector[i] = 1.0/3.0;
     }
 
-    int iteration = 0;
-    while(delta > EPSILON /*iteration < 21*/)
+
+    int iteration = 1;
+    while(delta > EPSILON /*iteration < 100*/)
     {
 
-        iteration++;
         printf("-----------------------\nIteration <%d>\n", iteration);
-
-        xft = multVectors(currentVector, f, vertexAm);
-        printf("XFT = <%f>\n", xft);
-        perturbator = (ONE_MINUS_ALPHA * median) + ((ALPHA * median) * xft);
-        printf("perturbator = <%f> --- median <%f> A*M*XFT <%f>\n", perturbator, median, (ALPHA * median) * xft);
-
-        tmpVectorPointer = leftMultMatrix(T, currentVector, vertexAm, perturbator);
-
-        free(previousVector);
-        previousVector = currentVector;
-        currentVector = tmpVectorPointer;
+        copyVector(previousVector, currentVector, vertexAm);
+        XFT = multVectors(currentVector, f, vertexAm);
+        perturbator = val_1 + val_2 * XFT;
+        xP(T, currentVector, vertexAm, tmpVectorPointer);
+        xG(currentVector, vertexAm, tmpVectorPointer, perturbator);
 
         delta = detlaVector(previousVector, currentVector, vertexAm);
         printf("delta <%0.10f>\n", delta);
         displayVect(currentVector, vertexAm); printf("\n");
         //displayVect(previousVector, vertexAm); printf("\n");
         //if(iteration > 2) return 0;
+        iteration++;
     }
 
 
