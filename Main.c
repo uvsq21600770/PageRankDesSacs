@@ -456,15 +456,26 @@ double detlaVector(double* previousVector, double* currentVector, size_t vertexA
    return result;
  }
 
- Arc** allocateVertexRail(int vertexAm)
+ Arc** allocateVertexRail(int size)
  {
-     Arc** T = malloc(sizeof(Arc*) * vertexAm);
-     for(int i = 0; i < vertexAm; i++)
+     Arc** T = malloc(sizeof(Arc*) * size);
+     for(int i = 0; i < size; i++)
      {
          T[i] = NULL;
      }
 
      return T;
+ }
+
+ int* allocateFVector(int size)
+ {
+    int* f;
+    f = malloc(sizeof(int) * size);
+       for(int i = 0; i < size; i++)
+        {
+           f[i] = 0;
+        }
+    return f;
  }
 
 int main(){
@@ -497,6 +508,10 @@ int main(){
     printf("vertexAm = %d\n", vertexAm);
     median = 1.0/vertexAm;
 
+    //Gets the amount of Arcs in the matrix
+    int arcAm = parseInt(fp, &reachEOLF);
+    printf("arcAm = %d\n", arcAm);
+
 //+--------CHOIX DU MODE--------+//
     targetMode = chooseTargetMode();
     printf("Target Mode <%d>\n", targetMode);
@@ -507,33 +522,26 @@ int main(){
     }
     return 420;
 
-    //La tringle du rideau
-    Arc** T = malloc(sizeof(Arc*) * vertexAm);
-    for(int i = 0; i < vertexAm; i++)
+    //On les sort du if pour faire plaisir au compilo, à voir si on les remet dedans
+    Arc** T;
+    int* f;
+    if(targetMode != Custom_Pertinence)
     {
-        T[i] = NULL;
+      //La tringle du rideau
+      T = allocateVertexRail(vertexAm);
+
+      //the "f" from XFT
+      f = allocateFVector(vertexAm);
+
+      //Build the hollow matrix from the file
+      buildHollowMatrix(fp, vertexAm, arcAm, T, f);
+      end = clock();
+      printf("Loading the file into the structure took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
+      //return 69;
     }
 
-    //Gets the amount of Arcs in the matrix
-    int arcAm = parseInt(fp, &reachEOLF);
-    printf("arcAm = %d\n", arcAm);
-
-    //the "f" from XFT
-    int* f;
-    f = malloc(sizeof(int) * vertexAm);
-        for(int i = 0; i < vertexAm; i++)
-        {
-            f[i] = 0;
-        }
-
-    //Build the hollow matrix from the file
-    buildHollowMatrix(fp, vertexAm, arcAm, T, f);
-
-    end = clock();
-    printf("Loading the file into the structure took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
-    return 69;
     double* previousVector;
-    double* currentVector;
+    double* currentVector; //C'EST CELUI QU'ON VA SORTIR ESPECE DE SAC
     double* tmpVectorPointer;
 
     //It will be free instantly when we enter the loop so we don't need to give an actual meaningful amount, it will soon take the value of currentVector anyway
