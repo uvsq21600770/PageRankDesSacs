@@ -6,11 +6,14 @@
 #include <time.h>
 #include <math.h>
 
+#include "Modes.h"
+
 #define SIZE_ARRAY 15
 #define MAX_SIZE 262144 //2^18 just enough for wb-edu, we could increase it if we need to load bigger lines
 #define ALPHA 0.85
 #define ONE_MINUS_ALPHA 0.15
 #define EPSILON 0.000001
+
 
 clock_t start, end;
 
@@ -73,7 +76,7 @@ int parseInt(FILE* fp, bool *reachEOLF)
     char stringInt[SIZE_ARRAY];
     fpos_t pos;
         for(int i = 0; i < SIZE_ARRAY; i++)
-            stringInt[i] = '\0';
+            {stringInt[i] = '\0';}
             stringInt[0] = 'B';
     int result = -1;
 
@@ -125,7 +128,7 @@ double parseDouble(FILE* fp, bool *reachEOLF)
     char* tailptr;
     fpos_t pos;
         for(int i = 0; i < SIZE_ARRAY; i++)
-            stringDouble[i] = '\0';
+            {stringDouble[i] = '\0';}
             stringDouble[0] = 'B';
     double result = -1.0;
 
@@ -453,6 +456,17 @@ double detlaVector(double* previousVector, double* currentVector, size_t vertexA
    return result;
  }
 
+ Arc** allocateVertexRail(int vertexAm)
+ {
+     Arc** T = malloc(sizeof(Arc*) * vertexAm);
+     for(int i = 0; i < vertexAm; i++)
+     {
+         T[i] = NULL;
+     }
+
+     return T;
+ }
+
 int main(){
 
     //For exec time mesuring
@@ -465,11 +479,13 @@ int main(){
     double xft = 0.0;
     double perturbator = 0.0;
     double delta = 10*EPSILON;
+    int targetMode = -1;
+    int target = -1;
 
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("DOS/WIN_wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -480,6 +496,16 @@ int main(){
     int vertexAm = parseInt(fp, &reachEOLF);
     printf("vertexAm = %d\n", vertexAm);
     median = 1.0/vertexAm;
+
+//+--------CHOIX DU MODE--------+//
+    targetMode = chooseTargetMode();
+    printf("Target Mode <%d>\n", targetMode);
+    if(targetMode == Custom_Pertinence)
+    {
+      target = ChooseCustomTarget(vertexAm);
+      printf("Target <%d>\n", target);
+    }
+    return 420;
 
     //La tringle du rideau
     Arc** T = malloc(sizeof(Arc*) * vertexAm);
@@ -505,7 +531,7 @@ int main(){
 
     end = clock();
     printf("Loading the file into the structure took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
-
+    return 69;
     double* previousVector;
     double* currentVector;
     double* tmpVectorPointer;
