@@ -1,5 +1,9 @@
+#ifndef __STD_LIB
+#define __STD_LIB
 #include <stdio.h>
 #include <stdlib.h>
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
@@ -7,6 +11,8 @@
 #define SIZE_ARRAY 15
 #define MAX_SIZE 262144 //2^18 just enough for wb-edu, we could increase it if we need to load bigger lines
 
+#ifndef __ARC_STRUCT
+#define __ARC_STRUCT
 typedef struct Arc
 {
     int Id;
@@ -14,6 +20,7 @@ typedef struct Arc
     struct Arc* next;
 
 } Arc;
+#endif
 
 void addArc(int orig, int dest, double weight, Arc** T);
 void isNumber(char ch);
