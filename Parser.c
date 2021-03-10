@@ -315,6 +315,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
 */
 void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T, int* f)
 {
+    printf("Building the Matrix, please wait while the file is being read !\n");
     int arcRead = 0;
     for(int i = 0; i < vertexAm /*1*/ ; i++)
     {

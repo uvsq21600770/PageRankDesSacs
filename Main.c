@@ -3,6 +3,7 @@
 #include "Modes.h"
 #include "Parser.h"
 #include "MatrixVectorCalc.h"
+#include "Bombs.h"
 
 //I'm keeping all my defines here that way when I change them for real in the place where they're actually
 //declared I'll feel extra dumb for believing these are the actual fucking values.
@@ -141,11 +142,17 @@ int main(){
 
     int targetMode = -1;
     int target = -1;
+    int bombAmount = -1;
+    int bombStructure = -1;
+
+    Arc** T;
+    int* f;
+    double* currentVector;
 
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("mini.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -166,44 +173,68 @@ int main(){
     printf("Target Mode <%d>\n", targetMode);
     if(targetMode == Custom_Pertinence)
     {
-      target = ChooseCustomTarget(vertexAm);
+      target = chooseCustomTarget(vertexAm);
       printf("Target <%d>\n", target);
     }
+
+//+--------CHOIX DE L'ATTAQUE--------+//
+    bombAmount = chooseBombAmount(); //On devrait peut-être faire de la vérif sur ça un jour
+    bombStructure = chooseBombStructure();
     //return 420;
 
-    //On les sort du if pour faire plaisir au compilo, à voir si on les remet dedans
-    Arc** T;
-    int* f;
-    double* currentVector;
+//+--------Réservation de la mémoire pour la Matrice + Les attaquants--------+//
+    int totalVertexAm = vertexAm + bombAmount;
+    //La tringle du rideau
+    T = allocateVertexRail(totalVertexAm);
+
+    //the "f" from XFT
+    f = allocateFVector(totalVertexAm);
+
+    //Construit la Matrice depuis le fichier
+    //On se restraint à "vertexAm" sommets comme les attaquants n'entrent pas encore en jeu
+    buildHollowMatrix(fp, vertexAm/*Oui c'est normal*/, arcAm, T, f);
+    end = clock();
+    printf("Loading the file into the structure took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
+
+//+--------PageRank Préliminaire pour les Modes [1-3]--------+//
     if(targetMode != Custom_Pertinence)
     {
-      //La tringle du rideau
-      T = allocateVertexRail(vertexAm);
-
-      //the "f" from XFT
-      f = allocateFVector(vertexAm);
-
-      //Build the hollow matrix from the file
-      buildHollowMatrix(fp, vertexAm, arcAm, T, f);
-      end = clock();
-      printf("Loading the file into the structure took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
-      //return 69;
-
-      //On lance PageRank une première fois pour obtenir la pertinence de tous les sommets
+      //On lance PageRank une première fois pour obtenir la pertinence de tous les sommets (hotmis les attaquants)
       //On détermine ensuite un sommet qui correspond à notre type de cible
 
-      currentVector = pageRank(T, f, vertexAm);
+      currentVector = pageRank(T, f, vertexAm/*Oui c'est normal*/);
+      /*DETERMINATION DE LA CIBLE*/
     }
 
+    /*printf("Target Before:\n");
+    followLinks(T[target-1], target-1);
+    printf("Continue ?\n");
+    scanf("%*c %*c");*/
+    printf("---------------BEFORE---------------\n");
+    for(int i = 0; i < vertexAm; i++)
+    {
+      followLinks(T[i], i);
+    }
+    printf("---------------AFTER---------------\n");
+    setupBombsGenesis(T, vertexAm, totalVertexAm, target, bombStructure);
+
+    /*printf("Target After:\n");
+    followLinks(T[target-1], target-1);
+    printf("Continue ?\n");
+    scanf("%*c %*c");*/
+    for(int i = 0; i < totalVertexAm; i++)
+    {
+      followLinks(T[i], i);
+    }
 
 
     //Lance PageRank avec les attaquants (même si ils sont pas encore là lol)
-    //currentVector = pageRank(T, f/*MODIFIER F POUR PRENDRE LES ATTAQUANTS EN COMPTE*/, vertexAm/*+ NOMBRE D'ATTAQUANTS*/);
+    //currentVector = pageRank(T, f/*MODIFIER F POUR PRENDRE LES ATTAQUANTS EN COMPTE*/, totalVertexAm);
 
 
     //Si j'étais pas un sac ici y aurait des free, lol
     //displayVect(currentVector, vertexAm);
-    displayVect(currentVector, vertexAm);
+    //displayVect(currentVector, vertexAm);
     end = clock();
     printf("Completion took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
     fclose(fp);

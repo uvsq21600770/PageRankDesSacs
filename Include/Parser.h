@@ -1,7 +1,10 @@
+#ifndef __PARSER_H
+#define __PARSER_H
+
 #ifndef __STD_LIB
 #define __STD_LIB
-#include <stdio.h>
-#include <stdlib.h>
+  #include <stdio.h>
+  #include <stdlib.h>
 #endif
 
 #include <stdbool.h>
@@ -23,6 +26,7 @@ typedef struct Arc
 #endif
 
 void addArc(int orig, int dest, double weight, Arc** T);
+
 void isNumber(char ch);
 int parseInt(FILE* fp, bool *reachEOLF); //Will be removed once I stop being a lazy cunt
 
@@ -33,3 +37,4 @@ int fetchInt(char* line, size_t totalLen, size_t* startingPos);
 
 int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f);
 void buildHollowMatrix(FILE* fp, int vertexAm, int arcAm, Arc** T, int* f);
+#endif
