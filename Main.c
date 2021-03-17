@@ -131,6 +131,42 @@ double* pageRank(Arc** T, int* f, int vertexAm)
     return currentVector;
 }
 
+void getMaxMinAveragePert(double* vector, int size)
+{
+  double max = 0.0; int   max_i = -1;
+  double min = 1.0; int   min_i = -1;
+  double average = 0.0;
+
+  for(int i = 0; i < size; i++)
+  {
+    if(vector[i] > max)
+    {
+      max = vector[i];
+      max_i = i;
+    }
+
+    if(vector[i] < min)
+    {
+      min = vector[i];
+      min_i = i;
+    }
+    average += vector[i];
+  }
+
+  average = average/(double)size;
+  double init = 1.0/(double)size;
+  printf("Max Pert is <%.24lf> at i = <%d> for the vertex <%d>\n", max, max_i, max_i+1);
+  printf("Min Pert is <%.24lf> at i = <%d> for the vertex <%d>\n", min, min_i, min_i+1);
+  printf("Average Pert is <%.24lf>\n", average);
+  printf("Initial value is <%.24lf>\n", init);
+  printf("--------------------------\n");
+
+  printf("Max-Average = <%.24lf> and <%lf>%%\n", max-average, (average/max)*100);
+  printf("Min-Average = <%.24lf> and <%lf>%%\n", min-average, (average/min)*100);
+  printf("Init-Average = <%.24lf> and <%lf>%%\n", init-average, (average/init)*100);
+
+}
+
 int main(){
 
     //For exec time mesuring
@@ -152,7 +188,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("mini.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -203,6 +239,7 @@ int main(){
       //On détermine ensuite un sommet qui correspond à notre type de cible
 
       currentVector = pageRank(T, f, vertexAm/*Oui c'est normal*/);
+      getMaxMinAveragePert(currentVector, vertexAm);
       /*DETERMINATION DE LA CIBLE*/
     }
 
@@ -211,10 +248,10 @@ int main(){
     printf("Continue ?\n");
     scanf("%*c %*c");*/
     printf("---------------BEFORE---------------\n");
-    for(int i = 0; i < vertexAm; i++)
+    /*for(int i = 0; i < vertexAm; i++)
     {
       followLinks(T[i], i);
-    }
+    }*/
     printf("---------------AFTER---------------\n");
     setupBombsGenesis(T, vertexAm, totalVertexAm, target, bombStructure);
 
@@ -222,10 +259,10 @@ int main(){
     followLinks(T[target-1], target-1);
     printf("Continue ?\n");
     scanf("%*c %*c");*/
-    for(int i = 0; i < totalVertexAm; i++)
+    /*for(int i = 0; i < totalVertexAm; i++)
     {
       followLinks(T[i], i);
-    }
+    }*/
 
 
     //Lance PageRank avec les attaquants (même si ils sont pas encore là lol)

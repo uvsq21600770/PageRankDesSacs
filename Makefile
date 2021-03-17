@@ -1,5 +1,5 @@
 PROJECT_NAME = test
-CC=gcc
+CC=gcc -O3
 PROJECT_SRC = .
 vpath %.c $(PROJECT_SRC)
 
@@ -8,8 +8,8 @@ SRCS = Main.c
 SRCS += Modes.c Parser.c MatrixVectorCalc.c Bombs.c
 
 ########################################################################
-INC_DIRS =Include
-INCLUDE = $(addprefix -I,$(INC_DIRS))
+INC_DIRS = Include
+INCLUDE = $(addprefix -I ,$(INC_DIRS))
 ########################################################################
 
 CFLAGS= -Wall \
