@@ -170,6 +170,12 @@ void fetchLine(FILE* fp, char** line, size_t* len)
             if(*len > MAX_SIZE / 2)
             {
                 printf("Stop trying to shove 131K+ chars in the memory you wonderful person (just go to the top and change MAX_SIZE)\n");
+                printf("length was <%ld>, Max_size/2 = <%d>\n", *len, MAX_SIZE / 2);
+                printf("Max_size = <%d>\n", MAX_SIZE);
+
+                //(*line)[100] = 0; //show enough chars to know which vertex is too big
+                //printf("<%s>", *line);
+
                 exit(EXIT_FAILURE);
             }
             else
@@ -190,6 +196,7 @@ void fetchLine(FILE* fp, char** line, size_t* len)
             }
     }
         //printf("[IN]String read <%s>\n", *line);
+
 }
 
 /*
