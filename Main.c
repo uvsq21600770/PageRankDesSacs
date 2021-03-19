@@ -4,7 +4,6 @@
 #include "Parser.h"
 #include "MatrixVectorCalc.h"
 #include "Bombs.h"
-#include "QuickSort.h"
 
 //I'm keeping all my defines here that way when I change them for real in the place where they're actually
 //declared I'll feel extra dumb for believing these are the actual fucking values.
@@ -273,7 +272,16 @@ void getMaxMinAveragePert(double* vector, int size)
     printf("HIGH MAXIMUM [%d]\n[%.24lf]\n\n", high[high_max], vector[high[high_max]]);
   }
   else printf("No HIGH VERTEX\n\n;");
+}
 
+int compareDouble(const void* a, const void* b)
+{
+    if(*(double*)a < *(double*)b)
+        return -1;
+    else if(*(double*)a > *(double*)b)
+        return 1;
+    else
+        return 0;
 }
 
 int main(){
@@ -348,10 +356,9 @@ int main(){
       //On détermine ensuite un sommet qui correspond à notre type de cible
       int i;
       currentVector = pageRank(T, f, vertexAm/*Oui c'est normal*/);
-      printf("\nValeur vecteur 543 047 :%0.10f\n",currentVector[543047]);
-      quickSort(currentVector,0,vertexAm-1); //Coucou je viens foutre la merde
-      //Donne des infos sur les sommets et leur distribution
-      //getMaxMinAveragePert(currentVector, vertexAm);
+
+      qsort(currentVector, vertexAm, sizeof(double), compareDouble);
+
       /*DETERMINATION DE LA CIBLE*/
     }
 
