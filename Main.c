@@ -4,6 +4,7 @@
 #include "Parser.h"
 #include "MatrixVectorCalc.h"
 #include "Bombs.h"
+#include "QuickSort.h"
 
 //I'm keeping all my defines here that way when I change them for real in the place where they're actually
 //declared I'll feel extra dumb for believing these are the actual fucking values.
@@ -343,13 +344,13 @@ int main(){
 //+--------PageRank Préliminaire pour les Modes [1-3]--------+//
     if(targetMode != Custom_Pertinence)
     {
-      //On lance PageRank une première fois pour obtenir la pertinence de tous les sommets (hotmis les attaquants)
+      //On lance PageRank une première fois pour obtenir la pertinence de tous les sommets (hormis les attaquants)
       //On détermine ensuite un sommet qui correspond à notre type de cible
-
+      int i;
       currentVector = pageRank(T, f, vertexAm/*Oui c'est normal*/);
-
+      //quickSort(currentVector,0,vertexAm);
       //Donne des infos sur les sommets et leur distribution
-      getMaxMinAveragePert(currentVector, vertexAm);
+      //getMaxMinAveragePert(currentVector, vertexAm);
       /*DETERMINATION DE LA CIBLE*/
     }
 

@@ -5,7 +5,7 @@ vpath %.c $(PROJECT_SRC)
 
 ########################################################################
 SRCS = Main.c
-SRCS += Modes.c Parser.c MatrixVectorCalc.c Bombs.c
+SRCS += Modes.c Parser.c MatrixVectorCalc.c Bombs.c QuickSort.c
 
 ########################################################################
 INC_DIRS = Include
@@ -13,7 +13,8 @@ INCLUDE = $(addprefix -I ,$(INC_DIRS))
 ########################################################################
 
 CFLAGS= -Wall \
-       -pedantic
+       -pedantic \
+	   -g
 
 
 LDFLAGS=
