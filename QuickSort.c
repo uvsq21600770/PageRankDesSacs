@@ -20,7 +20,6 @@ void quickSort(double values[], int low, int high)
    double k;
    int p;
 
-
   if (low < high)
   {
      p = pivot(low,high);

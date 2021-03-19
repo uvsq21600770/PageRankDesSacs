@@ -348,7 +348,8 @@ int main(){
       //On détermine ensuite un sommet qui correspond à notre type de cible
       int i;
       currentVector = pageRank(T, f, vertexAm/*Oui c'est normal*/);
-      //quickSort(currentVector,0,vertexAm);
+      printf("\nValeur vecteur 543 047 :%0.10f\n",currentVector[543047]);
+      quickSort(currentVector,0,vertexAm-1); //Coucou je viens foutre la merde
       //Donne des infos sur les sommets et leur distribution
       //getMaxMinAveragePert(currentVector, vertexAm);
       /*DETERMINATION DE LA CIBLE*/
