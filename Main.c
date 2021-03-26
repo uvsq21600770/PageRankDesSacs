@@ -332,6 +332,53 @@ int acquireTargetId(int vertexAm, double* currentVector, int targetMode)
 
 }
 
+void analysis(int target, double targetPertinence, int targetMode, int bombAmount, int bombStructure, double* currentVector)
+{
+  printf("\n\n--- Settings ---\n");
+
+  switch(targetMode)
+  {
+    case Haute_Pertinence:
+      printf("Haute pertinence\n");
+      break;
+
+    case Moyenne_Pertinence:
+      printf("Moyenne pertinence\n");
+      break;
+
+    case Faible_pertinence:
+      printf("Faible pertinence\n");
+      break;
+  }
+
+  printf("Bomb Amount <%d>\n", bombAmount);
+
+  switch(bombStructure)
+  {
+    case Graphe_Complet:
+      printf("Complet\n");
+      break;
+
+    case Graphe_Anneau:
+      printf("Anneau\n");
+      break;
+
+    case Sommets_Isoles:
+      printf("Singulier\n");
+      break;
+  }
+
+  printf("\n--- Nouvelle Pertinence ---\n");
+  printf("[%d] = <%.24lf>\n", target, currentVector[target]);
+
+  if(targetMode != Custom_Pertinence)
+  {
+    printf("\n--- Originial Pertinence ---\n");
+    printf("[%d] = <%.24lf>\n", target, targetPertinence);
+    printf("\nDelta = <%.24lf>\n", currentVector[target] - targetPertinence);
+  }
+}
+
 int main(){
 
     //For exec time mesuring
@@ -428,16 +475,7 @@ int main(){
     //MODIFIER F POUR PRENDRE LES ATTAQUANTS EN COMPTE ? Pas sûr d'avoir besoin de mettre autre chose que des 0 sur les bombes au final
     currentVector = pageRank(T, f, totalVertexAm);
 
-    printf("--- Nouvelle Pertinence ---\n");
-    printf("[%d] = <%.24lf>\n", target, currentVector[target]);
-
-    if(targetMode != Custom_Pertinence)
-    {
-      printf("--- Originial Pertinence ---\n");
-      printf("[%d] = <%.24lf>\n", target, targetPertinence);
-      printf("Delta = <%.24lf>\n", currentVector[target] - targetPertinence);
-    }
-
+    analysis(target, targetPertinence, targetMode, bombAmount, bombStructure, currentVector);
 
     //Si j'étais pas un sac ici y aurait des free, lol
     //displayVect(currentVector, vertexAm);
