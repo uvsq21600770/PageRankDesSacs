@@ -274,14 +274,62 @@ void getMaxMinAveragePert(double* vector, int size)
   else printf("No HIGH VERTEX\n\n;");
 }
 
-int compareDouble(const void* a, const void* b)
+
+//Structure pour conserver l'Id des sommets et leur pertinence, utile lors du tri
+//qui sert a déterminer la target
+typedef struct Id_Pert
 {
-    if(*(double*)a < *(double*)b)
+    int Id;
+    double pertinence;
+
+} Id_Pert;
+
+//Fonction de comparaison d'une struct Id_Pert pour le qsort
+int compareId_Pert(const void* a, const void* b)
+{
+    if(((Id_Pert*)a)->pertinence < ((Id_Pert*)b)->pertinence)
         return -1;
-    else if(*(double*)a > *(double*)b)
+    else if(((Id_Pert*)a)->pertinence > ((Id_Pert*)b)->pertinence)
         return 1;
     else
         return 0;
+}
+
+//Retourne la cible de l'attaque
+int acquireTargetId(int vertexAm, double* currentVector, int targetMode)
+{
+  //Dump le vecteur de pertinence dans une structure qui associe sommet et pertinence
+  Id_Pert* orderedVector = malloc(vertexAm * sizeof(Id_Pert));
+  for(int i = 0; i < vertexAm; i++)
+  {
+    orderedVector[i].Id = i;
+    orderedVector[i].pertinence = currentVector[i];
+  }
+
+  //Tri du vecteur
+  qsort(orderedVector, vertexAm, sizeof(Id_Pert), compareId_Pert);
+
+  int target = -1;
+  //Détermine l'ID de la target dans le vecteur trié en fonction de la pertinence recherchée
+  //On utilise le premier quartile pour faible, mediane pour moyenne et troisième quartile pour forte
+  switch (targetMode)
+  {
+    case Faible_pertinence :
+      target = vertexAm/4;
+      break;
+
+    case Moyenne_Pertinence :
+      target = vertexAm/2;
+      break;
+
+    case Haute_Pertinence :
+      target = (3*vertexAm)/4;
+      break;
+  }
+
+  printf("Target = %d -- %d\n", target, orderedVector[target].Id);
+  return orderedVector[target].Id;
+
 }
 
 int main(){
@@ -350,47 +398,45 @@ int main(){
     printf("Loading the file into the structure took <%f>s\n", (double)(end - start) / (double)(CLOCKS_PER_SEC));
 
 //+--------PageRank Préliminaire pour les Modes [1-3]--------+//
+
+    double targetPertinence = -1;
     if(targetMode != Custom_Pertinence)
     {
       //On lance PageRank une première fois pour obtenir la pertinence de tous les sommets (hormis les attaquants)
       //On détermine ensuite un sommet qui correspond à notre type de cible
-      int i;
       currentVector = pageRank(T, f, vertexAm/*Oui c'est normal*/);
 
-      qsort(currentVector, vertexAm, sizeof(double), compareDouble);
-
       /*DETERMINATION DE LA CIBLE*/
+      target = acquireTargetId(vertexAm, currentVector, targetMode);
+
+      //Pour la comparaison finale
+      targetPertinence = currentVector[target];
+
+      //On est pas des sauvages
+      free(currentVector);
     }
 
-    /////////////////////
-    //Les affichages d'après sont pour vérifier que les attaquants s'ajoutent bien à la structure
-    //Je déconseille de les activer sur une gross matrice mdr.
-    /////////////////////
-
-    /*printf("Target Before:\n");
-    followLinks(T[target-1], target-1);
-    printf("Continue ?\n");
-    scanf("%*c %*c");*/
-    printf("---------------BEFORE---------------\n");
-    /*for(int i = 0; i < vertexAm; i++)
-    {
-      followLinks(T[i], i);
-    }*/
-    printf("---------------AFTER---------------\n");
     setupBombsGenesis(T, vertexAm, totalVertexAm, target, bombStructure);
 
-    /*printf("Target After:\n");
-    followLinks(T[target-1], target-1);
-    printf("Continue ?\n");
-    scanf("%*c %*c");*/
-    /*for(int i = 0; i < totalVertexAm; i++)
+    for(int i = vertexAm; i < totalVertexAm; i++)
     {
-      followLinks(T[i], i);
-    }*/
+      f[i] = 0;
+    }
 
 
     //Lance PageRank avec les attaquants (même si ils sont pas encore là lol)
-    //currentVector = pageRank(T, f/*MODIFIER F POUR PRENDRE LES ATTAQUANTS EN COMPTE*/, totalVertexAm);
+    //MODIFIER F POUR PRENDRE LES ATTAQUANTS EN COMPTE ? Pas sûr d'avoir besoin de mettre autre chose que des 0 sur les bombes au final
+    currentVector = pageRank(T, f, totalVertexAm);
+
+    printf("--- Nouvelle Pertinence ---\n");
+    printf("[%d] = <%.24lf>\n", target, currentVector[target]);
+
+    if(targetMode != Custom_Pertinence)
+    {
+      printf("--- Originial Pertinence ---\n");
+      printf("[%d] = <%.24lf>\n", target, targetPertinence);
+      printf("Delta = <%.24lf>\n", currentVector[target] - targetPertinence);
+    }
 
 
     //Si j'étais pas un sac ici y aurait des free, lol
