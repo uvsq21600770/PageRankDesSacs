@@ -8,6 +8,6 @@ enum BombStructure{Graphe_Complet = 1, Graphe_Anneau, Sommets_Isoles};
 
 int chooseTargetMode();
 int chooseCustomTarget(int vertexAm);
-int chooseBombAmount();
+int chooseBombAmount(int bombStructure);
 int chooseBombStructure();
 #endif

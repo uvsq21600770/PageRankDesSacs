@@ -37,13 +37,33 @@ int chooseCustomTarget(int vertexAm)
   return target;
 }
 
-int chooseBombAmount()
+int chooseBombAmount(int bombStructure)
 {
   int bombAmount = -1;
-  printf("---Choisissez le nombre d'attaquants---\n");
+  char safetyOn = 'N';
+  if(bombStructure == 1)
+  {
+    printf("---Choisissez le nombre d'attaquants---\n---(Max 10000 car Graphe Complet)---\n");
+  } else
+  {
+    printf("---Choisissez le nombre d'attaquants---\n");
+  }
 
   scanf("%d", &bombAmount); //On lit 1 et 1 seul character en ignorant les characters blancs
   printf("\n");
+
+  while((bombStructure == Graphe_Complet && bombAmount > 10000) && (safetyOn != 'Y' && safetyOn != 'y'))
+  {
+    printf("Un graphe complet a factorielle(nbr_attaquants) arcs\nPour éviter de brûler des PCs on a décidé d'une limite à 10000\n");
+    printf("Souhaitez vous retirer le limiteur ?\n");
+    printf("[Y/N]\n");
+    scanf(" %c", &safetyOn);
+
+    printf("---Choisissez le nombre d'attaquants---\n");
+
+    scanf("%d", &bombAmount); //On lit 1 et 1 seul character en ignorant les characters blancs
+    printf("\n");
+  }
 
   if(bombAmount < 0)
   {

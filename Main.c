@@ -461,8 +461,10 @@ int main(){
     }
 
 //+--------CHOIX DE L'ATTAQUE--------+//
-    bombAmount = chooseBombAmount(); //On devrait peut-être faire de la vérif sur ça un jour
+
     bombStructure = chooseBombStructure();
+    bombAmount = chooseBombAmount(bombStructure); //On devrait peut-être faire de la vérif sur ça un jour
+
     //return 420;
 
 //+--------Réservation de la mémoire pour la Matrice + Les attaquants--------+//
