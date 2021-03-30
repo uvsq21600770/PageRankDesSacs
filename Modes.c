@@ -7,7 +7,7 @@ int chooseTargetMode()
   printf("[1] - Haute Pertinence\n");
   printf("[2] - Moyenne Pertinence\n");
   printf("[3] - Faible Pertinence\n");
-  printf("[4] - Sommet au Choix [PRENDRE CELUI LA POUR L'INSTANT (sauf si vous voulez lancer PageRank pour rien)]\n");
+  printf("[4] - Sommet au Choix\n");
   printf("[1/2/3/4]\n");
 
   scanf("%1d", &mode); //On lit 1 et 1 seul character en ignorant les characters blancs

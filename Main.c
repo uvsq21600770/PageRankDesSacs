@@ -43,6 +43,34 @@ void followLinks(Arc* A, int i)
     printf("\n");
 }
 
+void followLinksWithPertinence(Arc* A, int i, double* currentVector)
+{
+    Arc* tmp = A;
+    printf("<%d> -- <%lf>:\n", i+1, currentVector[i]);
+    while(tmp != NULL)
+    {
+        printf("%d a pour predecesseur %d for a weight of %f\n", i+1, tmp->Id, tmp->prob);
+        tmp = tmp->next;
+    }
+    printf("\n");
+}
+
+void displayGraph(Arc** T, int size, double* currentVector)
+{
+  for(int i = 0; i < size ; i++)
+      {
+          followLinksWithPertinence(T[i], i, currentVector);
+      }
+}
+
+void displayGraphB(Arc** T, int size)
+{
+  for(int i = 0; i < size ; i++)
+      {
+          followLinks(T[i], i);
+      }
+}
+
 /*
   Prints a Vector
 */
@@ -299,6 +327,7 @@ int compareId_Pert(const void* a, const void* b)
 int acquireTargetId(int vertexAm, double* currentVector, int targetMode)
 {
   //Dump le vecteur de pertinence dans une structure qui associe sommet et pertinence
+  //printf("Creating temp vector\n");
   Id_Pert* orderedVector = malloc(vertexAm * sizeof(Id_Pert));
   for(int i = 0; i < vertexAm; i++)
   {
@@ -307,7 +336,13 @@ int acquireTargetId(int vertexAm, double* currentVector, int targetMode)
   }
 
   //Tri du vecteur
+  //printf("Sorting vector\n");
   qsort(orderedVector, vertexAm, sizeof(Id_Pert), compareId_Pert);
+  /*for(int i = 0; i < vertexAm; i++)
+  {
+    printf("[%d] linked to [%d]\n",i, orderedVector[i].Id);
+  }*/
+  //printf("Vector sorted\n");
 
   int target = -1;
   //Détermine l'ID de la target dans le vecteur trié en fonction de la pertinence recherchée
@@ -327,8 +362,8 @@ int acquireTargetId(int vertexAm, double* currentVector, int targetMode)
       break;
   }
 
-  printf("Target = %d -- %d\n", target, orderedVector[target].Id);
-  return orderedVector[target].Id;
+  printf("Target = %d -- %d\n", target, orderedVector[target].Id+1);
+  return orderedVector[target].Id+1;
 
 }
 
@@ -369,13 +404,13 @@ void analysis(int target, double targetPertinence, int targetMode, int bombAmoun
   }
 
   printf("\n--- Nouvelle Pertinence ---\n");
-  printf("[%d] = <%.24lf>\n", target, currentVector[target]);
+  printf("[%d] = <%.24lf>\n", target, currentVector[target-1]);
 
   if(targetMode != Custom_Pertinence)
   {
     printf("\n--- Originial Pertinence ---\n");
     printf("[%d] = <%.24lf>\n", target, targetPertinence);
-    printf("\nDelta = <%.24lf>\n", currentVector[target] - targetPertinence);
+    printf("\nDelta = <%.24lf>\n", currentVector[target-1] - targetPertinence);
   }
 }
 
@@ -400,7 +435,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("wiki2005.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
@@ -457,9 +492,11 @@ int main(){
       target = acquireTargetId(vertexAm, currentVector, targetMode);
 
       //Pour la comparaison finale
-      targetPertinence = currentVector[target];
+      targetPertinence = currentVector[target-1];
 
       //On est pas des sauvages
+      //printf("Before Bombs\n");
+      //displayGraph(T, vertexAm, currentVector);
       free(currentVector);
     }
 
@@ -474,6 +511,8 @@ int main(){
     //Lance PageRank avec les attaquants (même si ils sont pas encore là lol)
     //MODIFIER F POUR PRENDRE LES ATTAQUANTS EN COMPTE ? Pas sûr d'avoir besoin de mettre autre chose que des 0 sur les bombes au final
     currentVector = pageRank(T, f, totalVertexAm);
+    //printf("After Bombs\n");
+    //displayGraph(T, totalVertexAm, currentVector);
 
     analysis(target, targetPertinence, targetMode, bombAmount, bombStructure, currentVector);
 
