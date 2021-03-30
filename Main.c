@@ -435,7 +435,7 @@ int main(){
     printf("C'est quoi le nom de ton putain de fichier\n");
     //gets(file_name);
 
-    fp = fopen("wiki2005.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
+    fp = fopen("wb-edu.txt", "r"); //Je hardcode le file car j'ai la flemme de le saisir à chaque fois
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");
