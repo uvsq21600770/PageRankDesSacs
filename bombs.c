@@ -1,4 +1,4 @@
-#include "Bombs.h"
+#include "bombs.h"
 
 void attachBombToTarget(Arc** T, int origVertexAm, int totalVertexAm, int targetID, double proba)
 {

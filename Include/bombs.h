@@ -1,8 +1,8 @@
 #ifndef __BOMBS_H
 #define __BOMBS_H
 
-#include "Modes.h"
-#include "Parser.h"
+#include "modes.h"
+#include "parser.h"
 
 void attachBombsToTarget(Arc** T, int origVertexAm, int totalVertexAm, int targetID, double proba);
 

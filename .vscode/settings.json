@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "matrixvectorcalc.h": "c",
+        "pagerank.h": "c"
+    }
+}

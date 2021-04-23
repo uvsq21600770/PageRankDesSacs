@@ -4,8 +4,8 @@ PROJECT_SRC = .
 vpath %.c $(PROJECT_SRC)
 
 ########################################################################
-SRCS = Main.c
-SRCS += Modes.c Parser.c MatrixVectorCalc.c Bombs.c
+SRCS = main.c
+SRCS += modes.c parser.c matrixVectorCalc.c bombs.c display.c pagerank.c
 
 ########################################################################
 INC_DIRS = Include

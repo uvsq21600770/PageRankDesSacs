@@ -1,4 +1,4 @@
-#include "MatrixVectorCalc.h"
+#include "matrixVectorCalc.h"
 
 /*
   Vector X Vector multiplication

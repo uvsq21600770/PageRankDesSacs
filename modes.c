@@ -1,4 +1,4 @@
-#include "Modes.h"
+#include "modes.h"
 
 int chooseTargetMode()
 {
