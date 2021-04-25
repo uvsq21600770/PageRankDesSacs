@@ -12,7 +12,8 @@
 #include <ctype.h>
 
 #define SIZE_ARRAY 15
-#define MAX_SIZE 2097152 //2^20 just enough for Berkley, we could increase it if we need to load bigger lines
+#define MAX_SIZE 2097152 
+//2^20 just enough for Berkley, we could increase it if we need to load bigger lines
 //#define MAX_SIZE 262144 //2^18 just enough for wb-edu, we could increase it if we need to load bigger lines
 
 #ifndef __ARC_STRUCT

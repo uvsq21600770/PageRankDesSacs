@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "matrixVectorCalc.h"
 #include "bombs.h"
+#include "pagerank.h"
 
 
 clock_t start, end;
@@ -12,7 +13,7 @@ int main(){
     //For exec time mesuring
     start = clock();
 
-    char ch, file_name[25];
+    //char ch, file_name[25];
     FILE *fp;
     bool reachEOLF;
 
