@@ -25,6 +25,10 @@ all: $(PROJECT_NAME)
 
 $(PROJECT_NAME): $(SRCS)
 	$(CC) $(INCLUDE) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	./$(PROJECT_NAME)
+
+run: $(PROJECT_NAME)
+	./$(PROJECT_NAME)
 
 %.o: %.c
 	$(CC) $< -c $(INCLUDE) $(CFLAGS)

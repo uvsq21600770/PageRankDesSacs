@@ -26,10 +26,13 @@ int main(){
     int* f;
     double* currentVector;
 
-    printf("Nom du fichier:\n");
-    //gets(file_name);
+    char file_name[64];
+    printf("Name of the file to open (with .txt):\n");
+    fgets(file_name, 64, stdin);
+    file_name[strcspn(file_name, "\n")] = '\0';
 
-    fp = fopen("Files/wb-edu.txt", "r"); //File to process
+
+    fp = fopen(file_name, "r"); //File to process
     if (fp == NULL)
        {
           perror("Error while opening the file.\n");

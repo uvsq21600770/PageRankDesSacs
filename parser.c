@@ -278,7 +278,6 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
 
     int amArcRead = 0;
     int amArcToRead = 0;
-    int vertexRead = 0;
     int destVertex = 0;
     double weight = 0.0;
 
@@ -289,7 +288,7 @@ int readLineArc(FILE* fp, int currentVertex, Arc** T, int* f)
     //printf("[OUT]String read <%s>\n", line);
 
     //Reads the vertex ID
-    vertexRead = fetchInt(line, len, &startingPos);
+    fetchInt(line, len, &startingPos);
     //printf("VertexID <%d>\n", vertexRead);
 
     //Reads the Arc amount
